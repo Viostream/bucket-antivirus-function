@@ -20,6 +20,7 @@ from urllib.parse import unquote_plus
 from distutils.util import strtobool
 
 import boto3
+import requests
 
 import clamav
 import metrics
@@ -150,6 +151,21 @@ def set_av_tags(s3_client, s3_object, scan_result, scan_signature, timestamp):
     )
 
 
+def slack_scan_results(s3_object, scan_result, slack_webhook):
+    if scan_result == AV_STATUS_CLEAN and not str_to_bool(AV_STATUS_SLACK_PUBLISH_CLEAN):
+        return
+
+    if scan_result == AV_STATUS_INFECTED and not str_to_bool(AV_STATUS_SLACK_PUBLISH_INFECTED):
+        return
+
+    message = {
+        "text": f'{scan_result}: {s3_object.bucket_name}/{s3_object.key}'
+    }
+
+    requests.post(slack_webhook, data=json.dumps(message),
+                  headers={'Content-Type': 'application/json'})
+
+
 def sns_start_scan(sns_client, s3_object, scan_start_sns_arn, timestamp):
     message = {
         "bucket": s3_object.bucket_name,
@@ -245,7 +261,7 @@ def lambda_handler(event, context):
         set_av_metadata(s3_object, scan_result, scan_signature, result_time)
     set_av_tags(s3_client, s3_object, scan_result, scan_signature, result_time)
 
-    # Publish the scan results
+    # Publish the scan results to SNS
     if AV_STATUS_SNS_ARN not in [None, ""]:
         sns_scan_results(
             sns_client,
@@ -254,6 +270,12 @@ def lambda_handler(event, context):
             scan_result,
             scan_signature,
             result_time,
+        )
+
+    # Publish the scan results to SLack
+    if AV_STATUS_SLACK_WEBHOOK not in [None, ""]:
+        slack_scan_results(
+            s3_object, scan_result, AV_STATUS_SLACK_WEBHOOK
         )
 
     metrics.send(
