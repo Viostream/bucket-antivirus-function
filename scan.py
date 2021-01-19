@@ -34,6 +34,9 @@ from common import AV_SIGNATURE_METADATA
 from common import AV_STATUS_CLEAN
 from common import AV_STATUS_INFECTED
 from common import AV_STATUS_METADATA
+from common import AV_STATUS_SLACK_PUBLISH_CLEAN
+from common import AV_STATUS_SLACK_PUBLISH_INFECTED
+from common import AV_STATUS_SLACK_WEBHOOK
 from common import AV_STATUS_SNS_ARN
 from common import AV_STATUS_SNS_PUBLISH_CLEAN
 from common import AV_STATUS_SNS_PUBLISH_INFECTED
