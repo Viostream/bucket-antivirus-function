@@ -27,6 +27,8 @@ import metrics
 from common import AV_DEFINITION_S3_BUCKET
 from common import AV_DEFINITION_S3_PREFIX
 from common import AV_DELETE_INFECTED_FILES
+from common import AV_OBJECT_IGNORE_PREFIX_LIST
+from common import AV_OBJECT_IGNORE_SUFFIX_LIST
 from common import AV_PROCESS_ORIGINAL_VERSION_ONLY
 from common import AV_SCAN_START_METADATA
 from common import AV_SCAN_START_SNS_ARN
@@ -43,6 +45,20 @@ from common import AV_STATUS_SNS_PUBLISH_INFECTED
 from common import AV_TIMESTAMP_METADATA
 from common import create_dir
 from common import get_timestamp
+
+
+def check_for_ignore(key, prefix_list, suffix_list):
+    if prefix_list not in [None, ""]:
+        for prefix in prefix_list.split(","):
+            if key.startswith(prefix):
+                return True
+
+    if suffix_list not in [None, ""]:
+        for suffix in suffix_list.split(","):
+            if key.endswith(suffix):
+                return True
+
+    return False
 
 
 def event_object(event, event_source="s3"):
@@ -229,6 +245,10 @@ def lambda_handler(event, context):
     start_time = get_timestamp()
     print("Script starting at %s\n" % (start_time))
     s3_object = event_object(event, event_source=EVENT_SOURCE)
+
+    if check_for_ignore(s3_object.key, AV_OBJECT_IGNORE_PREFIX_LIST, AV_OBJECT_IGNORE_SUFFIX_LIST):
+        print("Ignoring %s/%s" % (s3_object.bucket_name, s3_object.key))
+        return
 
     if str_to_bool(AV_PROCESS_ORIGINAL_VERSION_ONLY):
         verify_s3_object_version(s3, s3_object)

@@ -27,6 +27,7 @@ from common import AV_SIGNATURE_OK
 from common import AV_STATUS_METADATA
 from common import AV_TIMESTAMP_METADATA
 from common import get_timestamp
+from scan import check_for_ignore
 from scan import delete_s3_object
 from scan import event_object
 from scan import get_local_path
@@ -49,6 +50,13 @@ class TestScan(unittest.TestCase):
         self.sns_client = botocore.session.get_session().create_client(
             "sns", region_name="us-west-2"
         )
+
+    def test_check_for_ignore(self):
+        self.assertTrue(check_for_ignore("upload/file.txt", "upload/,boggo/", ".m3u8,.ts"))
+        self.assertTrue(check_for_ignore("upload/file.m3u8", "upload/,boggo/", ".m3u8,.ts"))
+        self.assertTrue(check_for_ignore("file.m3u8", "upload/,boggo/", ".m3u8,.ts"))
+        self.assertTrue(check_for_ignore("file.ts", "upload/,boggo/", ".m3u8,.ts"))
+        self.assertFalse(check_for_ignore("file.txt", "upload/,boggo/", ".m3u8,.ts"))
 
     def test_sns_event_object(self):
         event = {
