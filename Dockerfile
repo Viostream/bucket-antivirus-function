@@ -13,8 +13,7 @@ RUN \
   yum update -y && \
   yum install -y \
     cpio \
-    python3.12 \
-    python3.12-pip \
+    python3-pip \
     yum-utils \
     zip \
     unzip \
@@ -22,7 +21,7 @@ RUN \
   && yum clean all
 
 # This had --no-cache-dir, tracing through multiple tickets led to a problem in wheel
-RUN pip3.12 install -r requirements.txt && rm -rf /root/.cache/pip
+RUN pip3 install -r requirements.txt && rm -rf /root/.cache/pip
 
 # Download libraries we need to run in lambda
 WORKDIR /tmp
@@ -55,7 +54,7 @@ RUN \
 WORKDIR /opt/app
 RUN zip -r9 --exclude="*test*" /opt/app/build/lambda.zip *.py bin
 
-WORKDIR /usr/local/lib/python3.12/site-packages
+WORKDIR /usr/local/lib/python3.9/site-packages
 RUN zip -r9 /opt/app/build/lambda.zip *
 
 WORKDIR /opt/app
