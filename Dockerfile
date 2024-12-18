@@ -1,4 +1,4 @@
-FROM amazonlinux:2023
+FROM public.ecr.aws/lambda/python:3.9
 
 # Set up working directories
 RUN mkdir -p /opt/app /opt/app/build /opt/app/bin/
@@ -62,7 +62,7 @@ RUN \
 WORKDIR /opt/app
 RUN zip -r9 --exclude="*test*" /opt/app/build/lambda.zip *.py bin
 
-WORKDIR /usr/local/lib/python3.9/site-packages
+WORKDIR /var/lang/lib/python3.9/site-packages
 RUN zip -r9 /opt/app/build/lambda.zip *
 
 WORKDIR /opt/app
