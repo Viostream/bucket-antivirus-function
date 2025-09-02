@@ -5,5 +5,5 @@ decorator==4.*
 idna==3.*
 requests==2.*
 simplejson==3.*
-urllib3==1.*
+urllib3==2.*
 pytz>=2019.3
